@@ -2,10 +2,11 @@ import io
 import os
 
 import pandas as pd
-from google.colab import files, drive
+from google.colab import files
 from numpy import hstack
 
-from pandora.Helper import Helper
+from pandora.Config.Config import Config
+from pandora.Helper.Helper import Helper
 
 
 class DataLoader:
@@ -23,11 +24,8 @@ class DataLoader:
         return series
 
     @staticmethod
-    def read_csv_files_from_drive_in_colab():
-        drive.mount('/content/drive')
-
+    def read_csv_files_from_drive_in_colab(folder_path=Config.drive_csv_folder_path):
         # Navigate to the folder containing your CSV files
-        folder_path = '/content/drive/My Drive/iran_stock'
         %cd $folder_path
 
         # Get a list of all CSV files in the folder
@@ -41,16 +39,17 @@ class DataLoader:
         return dataframes
 
     @staticmethod
-    def stack_datasets(datasets, col):
+    def stack_datasets(datasets, col=Config.prediction_col):
         sequences = []
-        for dataset in datasets:
+        for dataset in list(datasets.values()):
             seq = dataset[col].values
             sequences.append(seq)
             # print(len(seq))
         return hstack([seq.reshape(len(seq), 1) for seq in sequences])
 
     @staticmethod
-    def data_preprocessing(dataset, date_col, start_date, end_date, format=True):
+    def data_preprocessing(dataset, date_col=Config.date_col, start_date=Config.start_date, end_date=Config.end_date,
+                           format=True):
         # sort by date
         dataset = dataset.sort_values(by=date_col)
         # print(dataset)
@@ -85,7 +84,7 @@ class DataLoader:
         return dataset
 
     @staticmethod
-    def train_test_split(dataset, test_size):
+    def train_test_split(dataset, test_size=Config.n_steps):
         index = -test_size - 1
         train = dataset[:index]
         test = dataset[index:-1]
